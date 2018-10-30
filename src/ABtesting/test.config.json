@@ -7,8 +7,8 @@
       }
     },
     "client": {
-      "buttonsColor" : "#40a0e0",
-      "buttonsOrder" : "+,÷,-,x,="
+      "buttonsColor": "#40a0e0",
+      "buttonsOrder": "+,÷,-,x,="
     }
   },
   "variantB": {
@@ -16,7 +16,7 @@
       "percentage": 50
     },
     "client": {
-      "buttonsOrder" : "=,÷,x,-,+"
+      "buttonsOrder": "=,÷,x,-,+"
     }
   }
 }
