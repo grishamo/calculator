@@ -50,7 +50,7 @@ Test Json
 }
 ```
 
-##`server: Object`
+## `server: Object`
 Configuration object for the server<br>
 The keys of this object represents possible traffic filters
 
