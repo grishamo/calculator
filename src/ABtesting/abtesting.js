@@ -1,22 +1,9 @@
 const math = require('mathjs');
-const configs = {
-    variantA: {
-        percentage: 100,
-        params: {
-            country: 'us'
-        }
-    },
-    variantB: {
-        percentage: 45,
-        params: {
-            country: 'us'
-        }
-    }
-};
+const configs = require('./test.config.json');
 
+const cookieKey = 'tname';
 const isTestParamsMatch = (queryParams, testParams) => {
     let returnValue = false;
-
     Object.keys(queryParams).forEach(key => {
         if(testParams.hasOwnProperty(key)) {
             if(queryParams[key] === testParams[key]){
@@ -26,10 +13,8 @@ const isTestParamsMatch = (queryParams, testParams) => {
             }
         }
     });
-
     return returnValue;
 };
-
 const numberOfTestRequests = (percent) => {
     let base = 100;
     let acceptRequestsNum = percent;
@@ -43,7 +28,6 @@ const numberOfTestRequests = (percent) => {
         totalNum: base
     }
 };
-
 const isInRange = (configs) => {
     // In order to serve all request with equal probability
     // we must find random number between total requests and 1,
@@ -53,29 +37,31 @@ const isInRange = (configs) => {
 };
 
 class ABTesting {
-
-    constructor(variant) {
-        this.testVariant = variant;
+    constructor(testName) {
+        this.testVariant = testName;
     }
-
     get middleware() {
         return (req, res, next) => {
-            if (isTestParamsMatch(req.query, this.test.params)) {
-                if (isInRange(this.testRequestsConfig)) {
-                    next()
-                } else {
-                    next('route')
-                }
-            } else {
-                next('route');
+            this.cookie.value  = req.cookies[cookieKey];
+            if (this.cookie.value) {
+                return next();
             }
+
+            if (isTestParamsMatch(req.query, this.testConfig.params)) {
+                if (isInRange(this.testRequestsConfig)) {
+                    this.cookie.value = JSON.stringify(this.testConfig.client);
+                }
+            }
+            next();
         }
     }
-
+    get testName() { return this.title }
     set testVariant(testName) {
         if (testName && configs.hasOwnProperty(testName)) {
-            this.test = configs[testName];
-            this.testRequestsConfig = numberOfTestRequests(this.test.percentage);
+            this.testConfig = configs[testName];
+            this.title = testName;
+            this.testRequestsConfig = numberOfTestRequests(this.testConfig.percentage);
+            this.cookie = {key: cookieKey, value: null};
         }
         else {
             throw new Error(testName + ' is not exists in test.config.json');

@@ -20,6 +20,7 @@ class Button extends React.Component {
         className={className.join(" ").trim()}
       >
         <button
+          style={{backgroundColor: this.props.color || 'none'}}
           onClick={this.handleClick}
         >
           {this.props.name}

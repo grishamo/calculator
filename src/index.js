@@ -5,18 +5,17 @@ import './index.css';
 import rootReducer from './reducers';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
-import { loadState, saveState } from './localStorage';
+import { CookiesProvider } from 'react-cookie';
+
 const store = createStore(
   rootReducer,
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
-store.subscribe(() => {
-    saveState(store.getState())
-});
-
 ReactDOM.render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
+    <CookiesProvider>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </CookiesProvider>,
   document.getElementById('root')
 );

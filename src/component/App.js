@@ -1,9 +1,10 @@
 import React from 'react';
 import Display from './Display';
-import ButtonPanel from './ButtonPanel';
-import ButtonPanel2 from './ButtonPanel2';
+// import ButtonPanel from './ButtonPanel';
+import ButtonPanelBuilder from '../ABtesting/client/ButtonPanelBuilder';
+import { withCookies } from 'react-cookie';
 import './App.css';
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
 import { calculate, calculatorLoaded } from '../actions/calculator'
 import { hot } from 'react-hot-loader'
 export class App extends React.Component {
@@ -12,14 +13,15 @@ export class App extends React.Component {
     };
 
     render() {
-        const {total, next} = this.props;
+        const {total, next, cookies} = this.props;
         return (
             <div className="component-app">
                 <Display
                     value={next || total || '0'}
                 />
-                <ButtonPanel2
+                <ButtonPanelBuilder
                     clickHandler={this.handleClick}
+                    cookies={cookies}
                 />
             </div>
         );
@@ -27,6 +29,6 @@ export class App extends React.Component {
 }
 const mapState = state => ({
     total: state.calculator.total,
-    next: state.calculator.next,
-})
-export default hot(module)(connect(mapState, { calculate, calculatorLoaded })(App))
+    next: state.calculator.next
+});
+export default hot(module)(withCookies(connect(mapState, { calculate, calculatorLoaded })(App)))
