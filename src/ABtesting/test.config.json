@@ -13,10 +13,7 @@
   },
   "variantB": {
     "server": {
-      "params": {
-        "country": "il"
-      }
-      "percentage": 50,
+      "percentage": 50
     },
     "client": {
       "buttonsOrder" : "=,÷,x,-,+"
