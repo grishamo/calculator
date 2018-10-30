@@ -1,6 +1,5 @@
 import React from 'react';
 import Display from './Display';
-// import ButtonPanel from './ButtonPanel';
 import ButtonPanelBuilder from '../ABtesting/client/ButtonPanelBuilder';
 import { withCookies } from 'react-cookie';
 import './App.css';

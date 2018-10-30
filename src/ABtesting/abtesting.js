@@ -1,8 +1,8 @@
 const math = require('mathjs');
-const configs = require('./test.config.json');
+const allConfigs = require('./test.config.json');
 
 const cookieKey = 'tname';
-const isTestParamsMatch = (queryParams, testParams) => {
+const isQueryParamsMatch = (queryParams, testParams) => {
     let returnValue = false;
     Object.keys(queryParams).forEach(key => {
         if(testParams.hasOwnProperty(key)) {
@@ -16,12 +16,9 @@ const isTestParamsMatch = (queryParams, testParams) => {
     return returnValue;
 };
 const numberOfTestRequests = (percent) => {
-    let base = 100;
-    let acceptRequestsNum = percent;
-    let gcd = math.gcd(percent, 100);
-
-    acceptRequestsNum /= gcd;
-    base /= gcd;
+    const gcd = math.gcd(percent, 100);
+    const acceptRequestsNum = percent / gcd;
+    const base = 100 / gcd;
 
     return {
         acceptNum: acceptRequestsNum,
@@ -35,37 +32,73 @@ const isInRange = (configs) => {
     let rand =  Math.floor(Math.random() * configs.totalNum) + 1;
     return rand <= configs.acceptNum;
 };
+const stringifyCookieValue = (data) => {
+    let returnValue = data || {};
+    return JSON.stringify(returnValue);
+};
+const validateConfig = (testName, cb) => {
+    // TODO use 'jsonschema' or similar library for proper json validation
+    const errorMessage = `ERROR: ${testName} has invalid configurations`;
+    const isValid = (testName &&
+        allConfigs.hasOwnProperty(testName) &&
+        allConfigs[testName].server
+    );
+
+    if (!isValid) {
+        cb({message: errorMessage})
+    } else {
+        cb(null)
+    }
+};
 
 class ABTesting {
     constructor(testName) {
-        this.testVariant = testName;
+        this.testConfigs = testName;
     }
     get middleware() {
         return (req, res, next) => {
-            this.cookie.value  = req.cookies[cookieKey];
-            if (this.cookie.value) {
-                return next();
-            }
+            if(!this.error) {
+                const cookie = req.universalCookies.get(cookieKey);
+                this.cookie.value = stringifyCookieValue(cookie);
 
-            if (isTestParamsMatch(req.query, this.testConfig.params)) {
-                if (isInRange(this.testRequestsConfig)) {
-                    this.cookie.value = JSON.stringify(this.testConfig.client);
+                if (!cookie) {
+                    let isPassTest = Object.keys(this.config.server).every(item => this.isTestPass(item, req));
+                    if (isPassTest) {
+                        console.log('Test Pass');
+                        this.cookie.value = stringifyCookieValue(this.config.client);
+                    }
                 }
+
+                res.cookie(this.cookie.key, this.cookie.value);
             }
             next();
         }
     }
-    get testName() { return this.title }
-    set testVariant(testName) {
-        if (testName && configs.hasOwnProperty(testName)) {
-            this.testConfig = configs[testName];
-            this.title = testName;
-            this.testRequestsConfig = numberOfTestRequests(this.testConfig.percentage);
-            this.cookie = {key: cookieKey, value: null};
+
+    isTestPass(item, req) {
+        let returnBool = false;
+        switch (item) {
+            case "percentage":
+                returnBool = isInRange(this.testRequestsConfig);
+                break;
+            case "params":
+                returnBool = isQueryParamsMatch(req.query, this.config.server.params);
         }
-        else {
-            throw new Error(testName + ' is not exists in test.config.json');
-        }
+        return returnBool;
+    }
+
+    set testConfigs (testName) {
+        validateConfig(testName, err => {
+            if(err) {
+                this.error = err;
+                console.error(err.message);
+                return;
+            }
+
+            this.config = allConfigs[testName];
+            this.testRequestsConfig = numberOfTestRequests(this.config.server.percentage);
+            this.cookie = {key: cookieKey, value: stringifyCookieValue(null)};
+        })
     }
 }
 

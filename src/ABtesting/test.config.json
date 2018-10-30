@@ -1,8 +1,10 @@
 {
   "variantA": {
-    "percentage": 30,
-    "params": {
-      "country": "us"
+    "server": {
+      "percentage": 100,
+      "params": {
+        "country": "us"
+      }
     },
     "client": {
       "buttonsColor" : "#40a0e0",
@@ -10,12 +12,14 @@
     }
   },
   "variantB": {
-    "percentage": 50,
-    "params": {
-      "country": "il"
+    "server": {
+      "params": {
+        "country": "il"
+      }
+      "percentage": 50,
     },
     "client": {
-      "buttonsOrder" : "#000000"
+      "buttonsOrder" : "=,÷,x,-,+"
     }
   }
 }
